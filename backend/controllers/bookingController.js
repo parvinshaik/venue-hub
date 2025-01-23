@@ -1,0 +1,200 @@
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const Booking = require("../models/Booking"); // Replace with your actual Booking model
+require("dotenv").config();
+
+// Utility function to get the next stage in the approval process
+const getNextStage = (currentStage) => {
+  const stages = ["coordinator", "hod", "principal"];
+  const currentIndex = stages.indexOf(currentStage);
+  return currentIndex >= 0 && currentIndex < stages.length - 1 ? stages[currentIndex + 1] : null;
+};
+
+// Approve booking function
+const approveBooking = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Decode the token
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { bookingId, stage } = decoded;
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    // Mark the current stage as approved
+    booking.approvalStatus[stage] = true;
+
+    // Check if the next stage exists
+    const nextStage = getNextStage(stage);
+
+    if (nextStage) {
+      await booking.save();
+      // Send approval email to the next stage
+      await sendApprovalEmail(bookingId, nextStage);
+      return res.status(200).json({ message: `Booking approved by ${stage}. Email sent to ${nextStage}.` });
+    } else {
+      // Final approval
+      booking.isApproved = true;
+      await booking.save();
+      return res.status(200).json({ message: "Booking fully approved!" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error approving booking" });
+  }
+};
+
+// Deny booking function
+const denyBooking = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Decode the token
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { bookingId, stage } = decoded;
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    // Send rejection emails to all who have already approved
+    const approvedStages = Object.keys(booking.approvalStatus).filter((key) => booking.approvalStatus[key]);
+    const emails = approvedStages.map((key) => booking[key].email);
+
+    // Add requester and additional CC email
+    emails.push(booking.coordinator.email, "venuebooking.adm.mictech@gmail.com");
+
+    // Create mail transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.SMTP_EMAIL,
+      to: emails,
+      subject: `Booking Rejected - ${booking.venue}`,
+      html: `
+        <p>The booking request for the following details has been rejected by the ${stage}:</p>
+        <ul>
+          <li><strong>Venue:</strong> ${booking.venue}</li>
+          <li><strong>Branch:</strong> ${booking.branchName}</li>
+          <li><strong>Activity Type:</strong> ${booking.activityType}</li>
+          <li><strong>Date:</strong> ${new Date(booking.date).toLocaleDateString()}</li>
+          <li><strong>Timings:</strong> ${booking.timings.start} - ${booking.timings.end}</li>
+        </ul>
+        <p>Please reach out for clarification or resubmit the booking request.</p>
+      `,
+    };
+
+    // Send rejection email
+    await transporter.sendMail(mailOptions);
+
+    // Return response
+    return res.status(200).json({ message: "Rejection emails sent successfully!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error rejecting booking" });
+  }
+};
+
+// Helper function to send approval email
+const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
+  try {
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      console.error("Booking not found");
+      return;
+    }
+
+    const { venue, branchName, activityType, date, timings, coordinator, hod, principal } = booking;
+    const requesterEmail = booking.coordinator.email; // Requester's email to CC
+
+    // Email credentials from .env
+    const smtpEmail = process.env.SMTP_EMAIL;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // Create mail transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: smtpEmail,
+        pass: smtpPassword,
+      },
+    });
+
+    // Determine recipient and next stage
+    let recipient, nextStage, nextRecipient;
+    if (stage === "coordinator") {
+      recipient = coordinator.email;
+      nextStage = "hod";
+      nextRecipient = hod.email;
+    } else if (stage === "hod") {
+      recipient = hod.email;
+      nextStage = "principal";
+      nextRecipient = principal.email;
+    } else if (stage === "principal") {
+      recipient = principal.email;
+      nextStage = null; // No further stage
+    }
+
+    // Generate approval and denial links
+    const token = jwt.sign(
+      { bookingId, stage, action: "approve" },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+    const approveLink = `http://localhost:8000/api/user/approve/${token}`;
+    const denyToken = jwt.sign(
+      { bookingId, stage, action: "deny" },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+    const denyLink = `http://localhost:8000/api/user/deny/${denyToken}`;
+
+    // Email content
+    const mailOptions = {
+      from: smtpEmail,
+      to: recipient,
+      cc: [requesterEmail, "venuebooking.adm.mictech@gmail.com"], // Include the additional email in CC
+      subject: `Approval Request for Booking at ${venue}`,
+      html: `
+        <p>Dear ${stage.charAt(0).toUpperCase() + stage.slice(1)},</p>
+        <p>A booking request has been submitted with the following details:</p>
+        <ul>
+          <li><strong>Venue:</strong> ${venue}</li>
+          <li><strong>Branch:</strong> ${branchName}</li>
+          <li><strong>Activity Type:</strong> ${activityType}</li>
+          <li><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</li>
+          <li><strong>Timings:</strong> ${timings.start} - ${timings.end}</li>
+        </ul>
+        <p>Please review the request and take an action:</p>
+        <p>
+          <a href="${approveLink}" style="color: green;">Approve</a> |
+          <a href="${denyLink}" style="color: red;">Deny</a>
+        </p>
+        <p>Thank you!</p>
+      `,
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+    console.log(`Approval email sent to ${stage}: ${recipient}`);
+
+    // // Update booking status
+    // if (nextStage && nextRecipient) {
+    //   await Booking.findByIdAndUpdate(bookingId, {
+    //     [`approvalStatus.${stage}`]: true, // Mark current stage as approved
+    //   });
+    //   // Recursively call for the next stage
+    //   return sendApprovalEmail(bookingId, nextStage);
+    // }
+  } catch (error) {
+    console.error("Error sending approval email:", error);
+  }
+};
+
+module.exports = { approveBooking, denyBooking,sendApprovalEmail };
