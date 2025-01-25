@@ -14,6 +14,7 @@ const Booking = require("../models/Booking");
 const signup = async (req, res) => {
   try {
     const { name, email, roll, password } = req.body;
+    console.log(req.body);
 
     // Validation for required fields
     if (!name || !email || !roll || !password) {

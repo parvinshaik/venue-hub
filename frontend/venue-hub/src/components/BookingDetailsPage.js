@@ -11,7 +11,7 @@ function BookingDetailsPage() {
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
-        const response = await axios.get(`hhttps://803e-103-232-27-107.ngrok-free.app/api/user/bookings/${bookingId}`);
+        const response = await axios.get(`hhttps://06d2-103-232-27-107.ngrok-free.app/api/user/bookings/${bookingId}`);
         setBookingDetails(response.data);
       } catch (error) {
         console.error("Error fetching booking details", error);
