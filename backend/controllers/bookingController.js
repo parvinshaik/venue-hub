@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const Booking = require("../models/Booking"); // Replace with your actual Booking model
+const { generatePDFAndSendEmail } = require("./GeneratePDF");
 require("dotenv").config();
 
 // Utility function to get the next stage in the approval process
@@ -37,7 +38,8 @@ const approveBooking = async (req, res) => {
       // Final approval
       booking.isApproved = true;
       await booking.save();
-      return res.status(200).json({ message: "Booking fully approved!" });
+      await generatePDFAndSendEmail(bookingId);
+      return res.status(200).json({ message: "Booking fully approved!. Application form generation in progress. Kindly wait for few minutes to recieve in mail." });
     }
   } catch (err) {
     console.error(err);
@@ -87,6 +89,12 @@ const denyBooking = async (req, res) => {
           <li><strong>Timings:</strong> ${booking.timings.start} - ${booking.timings.end}</li>
         </ul>
         <p>Please reach out for clarification or resubmit the booking request.</p>
+      <br/>
+      <br/>
+      <p>Thanks and regards,</p>
+      <p><strong>Admin Team @Venue Hub</strong></p>
+      <p>DVR & Dr. HS MIC College of Technology</p>
+      <p>Email: <a href="mailto:venuebooking.adm.mictech@gmail.com">venuebooking.adm.mictech@gmail.com</a></p>
       `,
     };
 
@@ -145,15 +153,15 @@ const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
     const token = jwt.sign(
       { bookingId, stage, action: "approve" },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
-    const approveLink = `http://localhost:8000/api/user/approve/${token}`;
+    const approveLink = `${process.env.BASE_URL}/approve/${token}`;
     const denyToken = jwt.sign(
       { bookingId, stage, action: "deny" },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
-    const denyLink = `http://localhost:8000/api/user/deny/${denyToken}`;
+    const denyLink = `${process.env.BASE_URL}/deny/${denyToken}`;
 
     // Email content
     const mailOptions = {
@@ -176,7 +184,13 @@ const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
           <a href="${approveLink}" style="color: green;">Approve</a> |
           <a href="${denyLink}" style="color: red;">Deny</a>
         </p>
-        <p>Thank you!</p>
+        <br/>
+      <br/>
+
+         <p>Thanks and regards,</p>
+      <p><strong>Admin Team @Venue Hub</strong></p>
+      <p>DVR & Dr. HS MIC College of Technology</p>
+      <p>Email: <a href="mailto:venuebooking.adm.mictech@gmail.com">venuebooking.adm.mictech@gmail.com</a></p>
       `,
     };
 

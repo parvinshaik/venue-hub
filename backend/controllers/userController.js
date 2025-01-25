@@ -14,41 +14,170 @@ const Booking = require("../models/Booking");
 const signup = async (req, res) => {
   try {
     const { name, email, roll, password } = req.body;
-    console.log(req.body);
-    console.log('request came');
+
+    // Validation for required fields
+    if (!name || !email || !roll || !password) {
+      return res.status(400).json({ message: "Please fill all the required details" });
+    }
+
+    // Password validation
     const hasNumber = /\d/;
     const hasSpecialCharacter = /[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]/;
     const hasUpperCase = /[A-Z]/;
-    // Check if the string meets all other conditions
-    const containsNumber = hasNumber.test(password);
-    const containsSpecialCharacter = hasSpecialCharacter.test(password);
-    const containsUpperCase = hasUpperCase.test(password);
 
-    // console.log(roll)
-    if (!name || !email || !password || !roll) {
-      return res.status(400).json({ message: "Fill all Details" });
-    }
-
-    if (!containsNumber || !containsSpecialCharacter || !containsUpperCase) {
-      return res.status(400).json({ message: "Use at least one UpperCase letter, one Special Character, and one Number in Your Password" });
-    }
-    
     if (password.length < 7) {
-      return res.status(400).json({ message: "Your Password must be at least 7 Characters" });
+      return res.status(400).json({ message: "Password must be at least 7 characters long" });
     }
 
-    const isUser = await User.findOne({ email: email }); //undefined
-    if (isUser) {
+    if (!hasNumber.test(password) || !hasSpecialCharacter.test(password) || !hasUpperCase.test(password)) {
+      return res.status(400).json({
+        message: "Password must include at least one uppercase letter, one special character, and one number",
+      });
+    }
+
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    const newUser = await User.create(req.body);
-    return res.status(200).json({ message: "User registered", user: newUser });
+    // Create user details
+    const userDetails = {
+      name,
+      email,
+      roll,
+      password, // Password should ideally be hashed before saving
+      approved_user: false, // Default value for the new user
+    };
+
+    // Save the new user to the database
+    const newUser = await User.create(userDetails);
+    const userId = newUser._id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const adminEmail = "venuebooking.adm.mictech@gmail.com";
+
+    // Generate one-time tokens for approve and deny actions
+    const approveToken = jwt.sign({ userId, action: "approve" }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "7d" });
+    const denyToken = jwt.sign({ userId, action: "deny" }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "7d" });
+
+    // Generate approval and denial links
+    const approveLink = `${process.env.BASE_URL}/admin/action/${approveToken}`;
+    const denyLink = `${process.env.BASE_URL}/admin/action/${denyToken}`;
+
+    // Email transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.SMTP_EMAIL,
+      to: adminEmail,
+      subject: `Approve or Deny User Request`,
+      html: `
+        <p>A user has been registered and waiting for approval. Below are the details:</p>
+        <ul>
+          <li><strong>User ID:</strong> ${user._id}</li>
+          <li><strong>Name:</strong> ${user.name}</li>
+          <li><strong>Email:</strong> ${user.email}</li>
+          <li><strong>Roll:</strong> ${user.roll}</li>
+        </ul>
+
+
+
+
+
+        <p>Click one of the following options:</p>
+        <a href="${approveLink}" target="_blank" style="color: green;">Approve User</a><br>
+        <a href="${denyLink}" target="_blank" style="color: red;">Deny User</a>
+        <p>Note: This link will expire in 7 days.</p>
+
+         <p>Thank you,</p>
+     
+      `,
+    };
+
+    // Send email to admin
+    await transporter.sendMail(mailOptions);
+    // Return success response
+    return res.status(200).json({
+      message: "User registered successfully",
+      user: { id: newUser._id, name: newUser.name, email: newUser.email, roll: newUser.roll },
+    });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: err.message });
+    console.error(err);
+    return res.status(500).json({ message: "An error occurred during registration" });
   }
 };
+
+
+const AdminAction = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Verify and decode the token
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { userId, action } = decoded;
+
+    // Fetch the user
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).send("User not found");
+
+    // Determine action
+    let statusMessage = "";
+    if (action === "approve") {
+      user.approved_user = true;
+      statusMessage = "Your account has been approved!";
+    } else if (action === "deny") {
+      user.approved_user = false;
+      statusMessage = "Your account request has been denied.";
+    } else {
+      return res.status(400).send("Invalid action");
+    }
+
+    // Save the user
+    await user.save();
+
+    // Notify the user via email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.SMTP_EMAIL,
+      to: user.email,
+      subject: `Account Status Update`,
+      html: `
+       <p>Dear ${user.name},</p>
+      <p>${statusMessage}</p>
+      <p>If you have any questions, please don't hesitate to contact us.</p>
+      <br/>
+      <br/>
+      <p>Thanks and regards,</p>
+      <p><strong>Admin Team @Venue Hub</strong></p>
+      <p>DVR & Dr. HS MIC College of Technology</p>
+      <p>Email: <a href="mailto:venuebooking.adm.mictech@gmail.com">venuebooking.adm.mictech@gmail.com</a></p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).send(`User ${action}d successfully! The user has been notified.`);
+  } catch (err) {
+    console.error(err);
+    return res.status(400).send("Invalid or expired link");
+  }
+}
+
 
 const signin = async (req, res) => {
   try {
@@ -56,7 +185,7 @@ const signin = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ message: "Fill all details" });
     }
-    const isUser = await User.findOne({ email : email, password: password});
+    const isUser = await User.findOne({ email: email, password: password });
     if (isUser) {
       const isPasswordValid = true;
 
@@ -72,6 +201,7 @@ const signin = async (req, res) => {
           message: "Login successful",
           name: isUser.name,
           token: accessToken,
+          approved_user: isUser.approved_user
         });
       } else {
         return res.status(401).json({ message: "Invalid Credentials" });
@@ -97,7 +227,7 @@ const signin = async (req, res) => {
 //       const accessToken = await jwt.sign(
 //         { userId: isUser._id },
 //         process.env.ACCESS_TOKEN_SECRET,
-//         { expiresIn: "1d", }
+//         { expiresIn: "7d", }
 //       );
 
 //       var transporter = nodemailer.createTransport({
@@ -191,13 +321,13 @@ const signin = async (req, res) => {
 //     const { email } = req.body;
 //     console.log(email)
 //     if (!email) return res.status(400).json({ message: "Fill Email Properly" });
-    
+
 //       const otp = randomstring.generate({
 //         length: 6, // Adjust the length as needed
 //         charset: 'numeric'
 //       });
 
-    
+
 
 //       var transporter = nodemailer.createTransport({
 //         service: 'gmail',
@@ -222,7 +352,7 @@ const signin = async (req, res) => {
 //         }
 //       });
 //       return res.status(200).json({ message: "OTP Sent Successfully!",OTP: `${otp}` });
-    
+
 //   }
 //   catch (err) {
 //     console.log(err);
@@ -244,6 +374,7 @@ const bookVenue = async (req, res) => {
       hod,
       principal,
       requirements,
+      token
     } = req.body;
 
     // Basic validation for required fields
@@ -288,6 +419,11 @@ const bookVenue = async (req, res) => {
         .json({ message: "Number of students attending must be at least 1" });
     }
 
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    const userId = decoded.userId;
+
+    const user = await User.findById(userId);
     // Save booking to the database
     const newBooking = await Booking.create({
       venue,
@@ -307,8 +443,10 @@ const bookVenue = async (req, res) => {
         user: false,
       },
       isApproved: false,
+      requestor_email: user.email
     });
-    await BookingController.sendApprovalEmail(newBooking._id,"coordinator");
+
+    await BookingController.sendApprovalEmail(newBooking._id, "coordinator");
     return res.status(200).json({
       message: "Booking successfully created",
       booking: newBooking,
@@ -324,12 +462,12 @@ const getAllBookings = async (req, res) => {
     const bookings = await Booking.find().sort({ date: -1 });;
     const bookingsData = bookings.map((booking, index) => {
       const { venue, activityType, date, timings, approvalStatus } = booking;
-      
+
       let pending = [];
       if (!approvalStatus.coordinator) pending.push("Coordinator");
       if (!approvalStatus.hod) pending.push("HOD");
       if (!approvalStatus.principal) pending.push("Principal");
-      
+
       return {
         srNo: index + 1,
         venue,
@@ -340,7 +478,7 @@ const getAllBookings = async (req, res) => {
         bookingId: booking._id,
       };
     });
-    
+
     return res.status(200).json(bookingsData);
   } catch (err) {
     console.error(err);
@@ -372,6 +510,7 @@ module.exports = {
   // sendotp,
   bookVenue,
   getAllBookings,
-  getBookingDetails
-  
+  getBookingDetails,
+  AdminAction
+
 };

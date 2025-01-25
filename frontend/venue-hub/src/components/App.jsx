@@ -62,9 +62,12 @@ function App() {
                 console.log(response.data);
             }
 
-            if (response.data.token) {
+            if (response.data.token && response.data.approved_user == true) {
                 toast.success("Login successful!");
                 navigate("/dashboard");
+            }
+            else if (response.data.token){
+                toast.error("Admin Approval is Pending. Kindly wait for the approval");
             }
 
         } catch (error) {
@@ -91,7 +94,7 @@ function App() {
 
             console.log(response.data);
             if (response.data) {
-                toast.success("Registration successful! Please Login");
+                toast.success("Registration successful! Kindly wait for Admin Approval.");
             }
 
         } catch (error) {

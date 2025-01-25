@@ -92,6 +92,11 @@ const BookingSchema = new mongoose.Schema(
       type: Boolean,
       default: false, 
     },
+    requestor_email:{
+      type: String,
+      required: [true, "Requestor email is required"],
+      match: [/.+@.+\..+/, "Requestor email must be valid"],
+    }
   },
   {
     timestamps: true, 

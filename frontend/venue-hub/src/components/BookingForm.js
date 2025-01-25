@@ -31,6 +31,7 @@ function BookingForm() {
       projector: false,
       generator: false,
     },
+    token: "",
   });
 
   const handleChange = (e) => {
@@ -84,6 +85,8 @@ function BookingForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitted Data:", formData);
+    const usertoken = await localStorage.getItem("loginToken");
+    formData.token = usertoken ;
 
     try {
       const response = await fetch("http://localhost:8000/api/user/book-venue", {

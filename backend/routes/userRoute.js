@@ -2,9 +2,9 @@ const { isAuthenticated } = require("../Middleware/verifyJWT");
 const express = require("express");
 const {signup,signin,
     // forgetpassword,resetpassword,sendotp,
-    bookVenue, getAllBookings, getBookingDetails} = require("../controllers/userController");
+    bookVenue, getAllBookings, getBookingDetails, AdminAction} = require("../controllers/userController");
 // const userController = require("../controllers/userController");
-const { approveBooking, denyBooking, sendApprovalEmail } = require("../controllers/bookingController");
+const { approveBooking, denyBooking } = require("../controllers/bookingController");
 
 const router = express.Router();
 router.route("/register").post(signup);
@@ -17,7 +17,7 @@ router.get("/bookings", getAllBookings);
 router.get("/bookings/:bookingId", getBookingDetails);
 router.get("/approve/:token", approveBooking);
 router.get("/deny/:token", denyBooking);
-
+router.get("/admin/action/:token", AdminAction);
 
 router.use(isAuthenticated);
 module.exports = router;

@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: [true, "password is required"],
     },
+    approved_user:{
+      type: Boolean,
+      required: [true, "approval status is required"],
+    }
   },
   {
     timestamps: true,
