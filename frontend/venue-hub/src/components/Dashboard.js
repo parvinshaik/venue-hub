@@ -19,7 +19,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/user/bookings");
+        const response = await axios.get("https://803e-103-232-27-107.ngrok-free.app/api/user/bookings");
         setBookings(response.data);
         console.log(response.data);
         response.data.forEach((booking)=>{

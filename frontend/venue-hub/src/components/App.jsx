@@ -56,7 +56,7 @@ function App() {
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("http://localhost:8000/api/user/login", loginData);
+            const response = await axios.post("https://803e-103-232-27-107.ngrok-free.app/api/user/login", loginData);
             if (response.data) {
                 await localStorage.setItem("loginToken", response.data.token);
                 console.log(response.data);
@@ -90,7 +90,7 @@ function App() {
                 roll: registerData.rollNumber,
                 password: registerData.password
             }
-            const response = await axios.post("http://localhost:8000/api/user/register", data);
+            const response = await axios.post("https://803e-103-232-27-107.ngrok-free.app/api/user/register", data);
 
             console.log(response.data);
             if (response.data) {
