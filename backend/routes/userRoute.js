@@ -12,6 +12,7 @@ router.get("/bookings/:bookingId", getBookingDetails);
 router.get("/approve/:token", approveBooking);
 router.get("/deny/:token", denyBooking);
 router.get("/admin/action/:token", AdminAction);
+router.get("/ping", (req,res)=> { res.send("Hello"); });
 
 router.use(isAuthenticated);
 module.exports = router;
