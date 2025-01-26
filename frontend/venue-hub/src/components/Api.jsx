@@ -1,3 +1,3 @@
-const api_url = "http://localhost:8000/api/user/" ;
+const api_url = "https://venue-hub-api.vercel.app/api/user/" ;
 
 export default api_url ;
