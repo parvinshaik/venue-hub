@@ -1,41 +1,38 @@
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const Booking = require("../models/Booking"); // Replace with your actual Booking model
+const Booking = require("../models/Booking"); 
 const { generatePDFAndSendEmail } = require("./GeneratePDF");
 require("dotenv").config();
 
-// Utility function to get the next stage in the approval process
 const getNextStage = (currentStage) => {
   const stages = ["coordinator", "hod", "principal"];
   const currentIndex = stages.indexOf(currentStage);
   return currentIndex >= 0 && currentIndex < stages.length - 1 ? stages[currentIndex + 1] : null;
 };
 
-// Approve booking function
 const approveBooking = async (req, res) => {
   try {
     const { token } = req.params;
 
-    // Decode the token
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const { bookingId, stage } = decoded;
 
     const booking = await Booking.findById(bookingId);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
-    // Mark the current stage as approved
+    
     booking.approvalStatus[stage] = true;
 
-    // Check if the next stage exists
+    
     const nextStage = getNextStage(stage);
 
     if (nextStage) {
       await booking.save();
-      // Send approval email to the next stage
+      
       await sendApprovalEmail(bookingId, nextStage);
       return res.status(200).json({ message: `Booking approved by ${stage}. Email sent to ${nextStage}.` });
     } else {
-      // Final approval
+
       booking.isApproved = true;
       await booking.save();
       await generatePDFAndSendEmail(bookingId);
@@ -47,26 +44,24 @@ const approveBooking = async (req, res) => {
   }
 };
 
-// Deny booking function
 const denyBooking = async (req, res) => {
   try {
     const { token } = req.params;
 
-    // Decode the token
+    
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const { bookingId, stage } = decoded;
 
     const booking = await Booking.findById(bookingId);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
-    // Send rejection emails to all who have already approved
+    
     const approvedStages = Object.keys(booking.approvalStatus).filter((key) => booking.approvalStatus[key]);
     const emails = approvedStages.map((key) => booking[key].email);
 
-    // Add requester and additional CC email
     emails.push(booking.coordinator.email, "venuebooking.adm.mictech@gmail.com");
 
-    // Create mail transporter
+  
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -98,10 +93,10 @@ const denyBooking = async (req, res) => {
       `,
     };
 
-    // Send rejection email
+
     await transporter.sendMail(mailOptions);
 
-    // Return response
+  
     return res.status(200).json({ message: "Rejection emails sent successfully!" });
   } catch (err) {
     console.error(err);
@@ -109,7 +104,7 @@ const denyBooking = async (req, res) => {
   }
 };
 
-// Helper function to send approval email
+
 const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
   try {
     const booking = await Booking.findById(bookingId);
@@ -119,13 +114,13 @@ const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
     }
 
     const { venue, branchName, activityType, date, timings, coordinator, hod, principal } = booking;
-    const requesterEmail = booking.coordinator.email; // Requester's email to CC
+    const requesterEmail = booking.coordinator.email;
 
-    // Email credentials from .env
+  
     const smtpEmail = process.env.SMTP_EMAIL;
     const smtpPassword = process.env.SMTP_PASSWORD;
 
-    // Create mail transporter
+  
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -134,7 +129,7 @@ const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
       },
     });
 
-    // Determine recipient and next stage
+  
     let recipient, nextStage, nextRecipient;
     if (stage === "coordinator") {
       recipient = coordinator.email;
@@ -146,10 +141,10 @@ const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
       nextRecipient = principal.email;
     } else if (stage === "principal") {
       recipient = principal.email;
-      nextStage = null; // No further stage
+      nextStage = null; 
     }
 
-    // Generate approval and denial links
+  
     const token = jwt.sign(
       { bookingId, stage, action: "approve" },
       process.env.ACCESS_TOKEN_SECRET,
@@ -163,11 +158,11 @@ const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
     );
     const denyLink = `${process.env.BASE_URL}/deny/${denyToken}`;
 
-    // Email content
+  
     const mailOptions = {
       from: smtpEmail,
       to: recipient,
-      cc: [requesterEmail, "venuebooking.adm.mictech@gmail.com"], // Include the additional email in CC
+      cc: [requesterEmail, "venuebooking.adm.mictech@gmail.com"], 
       subject: `Approval Request for Booking at ${venue}`,
       html: `
         <p>Dear ${stage.charAt(0).toUpperCase() + stage.slice(1)},</p>
@@ -194,18 +189,9 @@ const sendApprovalEmail = async(bookingId, stage = "coordinator") => {
       `,
     };
 
-    // Send email
     await transporter.sendMail(mailOptions);
     console.log(`Approval email sent to ${stage}: ${recipient}`);
 
-    // // Update booking status
-    // if (nextStage && nextRecipient) {
-    //   await Booking.findByIdAndUpdate(bookingId, {
-    //     [`approvalStatus.${stage}`]: true, // Mark current stage as approved
-    //   });
-    //   // Recursively call for the next stage
-    //   return sendApprovalEmail(bookingId, nextStage);
-    // }
   } catch (error) {
     console.error("Error sending approval email:", error);
   }

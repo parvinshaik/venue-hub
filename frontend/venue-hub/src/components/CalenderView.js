@@ -9,7 +9,7 @@ const localizer = momentLocalizer(moment);
 
 const VenueCalendar = () => {
   const [events, setEvents] = useState([]);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchBookings = async () => {
       try {

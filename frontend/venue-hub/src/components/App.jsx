@@ -20,7 +20,7 @@ function App() {
         password: "",
         termsAccepted: false,
     });
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         let index = 0; 
         const interval = setInterval(() => {

@@ -9,7 +9,7 @@ const VenueBarChart = () => {
   const [chartData, setChartData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchBookings = async () => {
       try {

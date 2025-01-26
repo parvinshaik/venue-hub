@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "./Header";
 import apiurl from "./Api";
+import { useNavigate } from "react-router-dom";
 
 const ApprovalsPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -28,7 +30,13 @@ const ApprovalsPage = () => {
     };
 
     fetchBookings();
-  }, []);
+  });
+  const navigate = useNavigate();
+    useEffect(()=>{
+      if(!localStorage.getItem("loginToken")){
+        navigate("/");
+      }
+  });
 
   if (loading) {
     return <p>Loading approved bookings...</p>;

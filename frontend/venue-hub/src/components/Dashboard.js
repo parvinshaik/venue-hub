@@ -6,12 +6,14 @@ import axios from 'axios';
 import CalenderView from './CalenderView';
 import VenueBarChart from './VenueBarChart';
 import apiurl from "./Api";
+import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
   const[approved, setapproved] = useState(0);
   const [underprogress, setunderprogress] = useState(0);
   const [pending, setpending] = useState(0);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -32,9 +34,13 @@ function Dashboard() {
       }
     };
     fetchBookings();
-  }, []);
-
- 
+  });
+  const navigate = useNavigate();
+  useEffect(()=>{
+    if(!localStorage.getItem("loginToken")){
+      navigate("/");
+    }
+  });
 
   return (
     <div>

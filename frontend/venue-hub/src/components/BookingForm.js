@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import Header from './Header';
 import { ToastContainer, toast } from 'react-toastify';
 import apiurl from "./Api";
@@ -36,6 +36,12 @@ function BookingForm() {
     },
     token: "",
   });
+
+    useEffect(()=>{
+      if(!localStorage.getItem("loginToken")){
+        navigate("/");
+      }
+    });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

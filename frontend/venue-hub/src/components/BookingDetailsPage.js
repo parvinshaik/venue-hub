@@ -3,12 +3,12 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import Header from './Header';
 import apiurl from "./Api";
-
+import { useNavigate } from "react-router-dom";
 
 function BookingDetailsPage() {
   const { bookingId } = useParams();
   const [bookingDetails, setBookingDetails] = useState(null);
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
@@ -20,6 +20,13 @@ function BookingDetailsPage() {
     };
     fetchBookingDetails();
   }, [bookingId]);
+
+  const navigate = useNavigate();
+    useEffect(()=>{
+      if(!localStorage.getItem("loginToken")){
+        navigate("/");
+      }
+    });
 
   if (!bookingDetails) return <div className="flex justify-center items-center h-screen"><div className="loader"></div></div>;
 

@@ -10,7 +10,7 @@ import apiurl from "./Api";
 function BookingsList() {
     const [bookings, setBookings] = useState([]);
     const navigate = useNavigate();
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const fetchBookings = async () => {
             try {
@@ -23,7 +23,12 @@ function BookingsList() {
             }
         };
         fetchBookings();
-    }, []);
+    });
+      useEffect(()=>{
+        if(!localStorage.getItem("loginToken")){
+          navigate("/");
+        }
+      });
 
 
     const viewBookingDetails = (bookingId) => {

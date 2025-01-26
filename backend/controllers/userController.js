@@ -16,12 +16,11 @@ const signup = async (req, res) => {
     const { name, email, roll, password } = req.body;
     console.log(req.body);
 
-    // Validation for required fields
+
     if (!name || !email || !roll || !password) {
       return res.status(400).json({ message: "Please fill all the required details" });
     }
 
-    // Password validation
     const hasNumber = /\d/;
     const hasSpecialCharacter = /[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]/;
     const hasUpperCase = /[A-Z]/;
@@ -36,22 +35,19 @@ const signup = async (req, res) => {
       });
     }
 
-    // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    // Create user details
     const userDetails = {
       name,
       email,
       roll,
-      password, // Password should ideally be hashed before saving
-      approved_user: false, // Default value for the new user
+      password, 
+      approved_user: false, 
     };
 
-    // Save the new user to the database
     const newUser = await User.create(userDetails);
     const userId = newUser._id;
     const user = await User.findById(userId);
@@ -59,15 +55,12 @@ const signup = async (req, res) => {
 
     const adminEmail = "venuebooking.adm.mictech@gmail.com";
 
-    // Generate one-time tokens for approve and deny actions
     const approveToken = jwt.sign({ userId, action: "approve" }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "7d" });
     const denyToken = jwt.sign({ userId, action: "deny" }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "7d" });
 
-    // Generate approval and denial links
     const approveLink = `${process.env.BASE_URL}/admin/action/${approveToken}`;
     const denyLink = `${process.env.BASE_URL}/admin/action/${denyToken}`;
 
-    // Email transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -103,9 +96,7 @@ const signup = async (req, res) => {
       `,
     };
 
-    // Send email to admin
     await transporter.sendMail(mailOptions);
-    // Return success response
     return res.status(200).json({
       message: "User registered successfully",
       user: { id: newUser._id, name: newUser.name, email: newUser.email, roll: newUser.roll },
@@ -121,15 +112,12 @@ const AdminAction = async (req, res) => {
   try {
     const { token } = req.params;
 
-    // Verify and decode the token
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const { userId, action } = decoded;
 
-    // Fetch the user
     const user = await User.findById(userId);
     if (!user) return res.status(404).send("User not found");
 
-    // Determine action
     let statusMessage = "";
     if (action === "approve") {
       user.approved_user = true;
@@ -141,10 +129,8 @@ const AdminAction = async (req, res) => {
       return res.status(400).send("Invalid action");
     }
 
-    // Save the user
     await user.save();
 
-    // Notify the user via email
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -216,150 +202,6 @@ const signin = async (req, res) => {
   }
 };
 
-// const forgetpassword = async (req, res) => {
-//   try {
-//     const { email } = req.body;
-//     console.log(email)
-//     if (!email) return res.status(400).json({ message: "Fill Email Properly" });
-//     const isUser = await User.findOne({ email });
-
-//     if (isUser) {
-
-//       const accessToken = await jwt.sign(
-//         { userId: isUser._id },
-//         process.env.ACCESS_TOKEN_SECRET,
-//         { expiresIn: "7d", }
-//       );
-
-//       var transporter = nodemailer.createTransport({
-//         service: 'gmail',
-//         auth: {
-//           user: _email,
-//           pass: _password,
-//         }
-//       });
-
-//       var mailOptions = {
-//         from: _email,
-//         to: email,
-//         subject: 'Reset Your Password',
-//         text: `http://localhost:3000/resetpassword/${isUser._id}/${accessToken}`
-//       };
-
-//       transporter.sendMail(mailOptions, function (error, info) {
-//         if (error) {
-//           console.log(error);
-//         } else {
-//           console.log('Email sent: ' + info.response);
-//         }
-//       });
-//       return res.status(200).json({ message: "Password Recovery Email sent successfully!!" });
-
-//     }
-//     else {
-//       return res.status(404).json({ message: "User Not Found" });
-//     }
-//   }
-//   catch (err) {
-//     console.log(err);
-//     return res.status(500).json({ message: "Internal Server Error" });
-//   }
-// }
-
-// const resetpassword = async (req, res) => {
-//   try {
-//     const { userId, accessToken } = req.params;
-//     const { password } = req.body;
-
-//     // Verify the access token (you should have a similar logic for generating access tokens)
-//     jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
-//       if (err) {
-//         return res.status(401).json({ message: "Invalid access token" });
-//       }
-
-//       const user = await User.findById(userId);
-//       if (!user) {
-//         return res.status(404).json({ message: "User not found" });
-//       }
-
-//       user.password = password;
-//       await user.save();
-
-//       // Send a confirmation email
-//       const transporter = nodemailer.createTransport({
-//         service: 'gmail',
-//         auth: {
-//           user: _email,
-//           pass: _password,
-//         }
-//       });
-
-//       const mailOptions = {
-//         from: _email,
-//         to: user.email,
-//         subject: 'Password Reset Confirmation',
-//         text: 'Your password has been reset successfully.'
-//       };
-
-//       transporter.sendMail(mailOptions, (error, info) => {
-//         if (error) {
-//           console.log(error);
-//         } else {
-//           console.log('Email sent: ' + info.response);
-//         }
-//       });
-
-//       return res.status(200).json({ message: "Password reset successful" });
-//     });
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
-// const sendotp = async (req, res) => {
-//   try {
-//     const { email } = req.body;
-//     console.log(email)
-//     if (!email) return res.status(400).json({ message: "Fill Email Properly" });
-
-//       const otp = randomstring.generate({
-//         length: 6, // Adjust the length as needed
-//         charset: 'numeric'
-//       });
-
-
-
-//       var transporter = nodemailer.createTransport({
-//         service: 'gmail',
-//         auth: {
-//           user: _email,
-//           pass: _password,
-//         }
-//       });
-
-//       var mailOptions = {
-//         from: _email,
-//         to: email,
-//         subject: 'OTP Verification',
-//         text: `Please use the following One-time-password (OTP) for Registration: ${otp}, Do not share this OTP. \n \n If you didn't request this, please Ignore this mail or let us know \n Regards, \n Food-eye team. `
-//       };
-
-//       transporter.sendMail(mailOptions, function (error, info) {
-//         if (error) {
-//           console.log(error);
-//         } else {
-//           console.log('Email sent: ' + info.response);
-//         }
-//       });
-//       return res.status(200).json({ message: "OTP Sent Successfully!",OTP: `${otp}` });
-
-//   }
-//   catch (err) {
-//     console.log(err);
-//     return res.status(500).json({ message: "Please Request OTP again!" });
-//   }
-// }
 
 
 const bookVenue = async (req, res) => {
@@ -378,7 +220,6 @@ const bookVenue = async (req, res) => {
       token
     } = req.body;
 
-    // Basic validation for required fields
     if (
       !venue ||
       !branchName ||
@@ -399,7 +240,6 @@ const bookVenue = async (req, res) => {
       return res.status(400).json({ message: "Please fill all required fields" });
     }
 
-    // Additional validations
     const emailRegex = /.+@.+\..+/;
 
     if (!emailRegex.test(coordinator.email)) {
@@ -425,7 +265,7 @@ const bookVenue = async (req, res) => {
     const userId = decoded.userId;
 
     const user = await User.findById(userId);
-    // Save booking to the database
+
     const newBooking = await Booking.create({
       venue,
       branchName,
@@ -506,9 +346,6 @@ const getBookingDetails = async (req, res) => {
 module.exports = {
   signup,
   signin,
-  // forgetpassword,
-  // resetpassword,
-  // sendotp,
   bookVenue,
   getAllBookings,
   getBookingDetails,
