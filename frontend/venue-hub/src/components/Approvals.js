@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "./Header";
+import apiurl from "./Api";
 
 const ApprovalsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -10,13 +11,12 @@ const ApprovalsPage = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await axios.get("https://06d2-103-232-27-107.ngrok-free.app/api/user/bookings");
+        const response = await axios.get(`${apiurl}/bookings`);
         const allBookings = response.data;
 
-        console.log("All Bookings:", allBookings); // Debugging logs
-        // Filter bookings where all approvals are completed
+        console.log("All Bookings:", allBookings); 
         const approvedBookings = allBookings.filter((booking) => booking.pending === "All Approved");
-        console.log("Approved Bookings:", approvedBookings); // Debugging logs
+        console.log("Approved Bookings:", approvedBookings); 
 
         setBookings(approvedBookings);
         setLoading(false);
@@ -71,14 +71,12 @@ const ApprovalsPage = () => {
   <div className="flex space-x-4 items-center justify-center">
     {["Coordinator", "HOD", "Principal"].map((role) => (
       <div key={role} className="flex flex-col items-center">
-        {/* Dot */}
         <span
           className={`h-4 w-4 rounded-full ${
             booking.pending.includes(role) ? "bg-gray-300" : "bg-green-600"
           }`}
           title={role}
         ></span>
-        {/* Label */}
         <span className="text-xs mt-1">{role}</span>
       </div>
     ))}

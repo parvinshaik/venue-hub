@@ -3,12 +3,18 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const cors = require("cors");
 const app = express();
-app.use(express.json());
-app.use(cors());
-const userRouter = require("./routes/userRoute");
-const { isAuthenticated } = require("./Middleware/verifyJWT");
+
+// Middleware
 const bodyParser = require('body-parser');
 
+// Body parser middleware to handle JSON and form data
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// Enable CORS to allow cross-origin requests
+app.use(cors());
+
+// MongoDB connection
 const mongoURI = process.env.MONGODB_URL;
 mongoose
   .connect(mongoURI, {
@@ -22,9 +28,11 @@ mongoose
     console.error("Error connecting to MongoDB Atlas:", error);
   });
 
+// Import routes
+const userRouter = require("./routes/userRoute");
 app.use("/api/user", userRouter);
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+
+// Start the server
 app.listen(8000, () => {
-  console.log("server started in terminal");
+  console.log("Server started on port 8000");
 });

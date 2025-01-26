@@ -3,6 +3,7 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import axios from "axios";
+import apiurl from "./Api";
 
 const localizer = momentLocalizer(moment);
 
@@ -12,48 +13,41 @@ const VenueCalendar = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await axios.get("https://06d2-103-232-27-107.ngrok-free.app/api/user/bookings");
+        const response = await axios.get(`${apiurl}/bookings`);
         const bookings = response.data;
 
-        console.log("API Response:", bookings); // Debugging: Check API response structure
+        console.log("API Response:", bookings); 
 
         const calendarEvents = bookings.map((booking) => {
-          // Ensure `timings` and `date` exist and are valid
           if (!booking.date || !booking.timings) {
             console.error("Missing or invalid date/timings:", booking);
             return null;
           }
 
-          // Extract start and end times from the timings string
           const [startTime, endTime] = booking.timings.split(" - ");
 
-          // Ensure the times are valid
           if (!startTime || !endTime) {
             console.error("Invalid timings format:", booking);
             return null;
           }
 
-          // Format the `start` and `end` times properly by combining with the date
-          const date = moment(booking.date).local().format("YYYY-MM-DD"); // Convert to local time
+          const date = moment(booking.date).local().format("YYYY-MM-DD");
           const startDateTime = moment(`${date} ${startTime}`, "YYYY-MM-DD HH:mm").local();
           const endDateTime = moment(`${date} ${endTime}`, "YYYY-MM-DD HH:mm").local();
 
-          // Check if `startDateTime` and `endDateTime` are valid
           if (!startDateTime.isValid() || !endDateTime.isValid()) {
             console.error("Invalid start or end date:", booking);
             return null;
           }
 
-          // Return the event object
           return {
-            title: booking.venue || "Unknown Venue", // Use a fallback for missing title
+            title: booking.venue || "Unknown Venue", 
             start: startDateTime.toDate(),
             end: endDateTime.toDate(),
-            isApproved: booking.pending === "All Approved" ? true :  false, // Default to false if not present
+            isApproved: booking.pending === "All Approved" ? true :  false,
           };
         });
 
-        // Filter out invalid events
         setEvents(calendarEvents.filter((event) => event !== null));
       } catch (error) {
         console.error("Error fetching bookings:", error);
@@ -63,7 +57,7 @@ const VenueCalendar = () => {
     fetchBookings();
   }, []);
 
-  // Custom event style based on approval status
+
   const eventPropGetter = (event) => {
     return {
       style: {
@@ -84,9 +78,9 @@ const VenueCalendar = () => {
         startAccessor="start"
         endAccessor="end"
         style={{ height: 500 }}
-        eventPropGetter={eventPropGetter} // Apply custom styles
-        views={["month", "week", "day", "agenda"]} // Enable multiple views
-        defaultView="day" // Set default view to Agenda
+        eventPropGetter={eventPropGetter} 
+        views={["month", "week", "day", "agenda"]}
+        defaultView="day"
       />
     </div>
   );

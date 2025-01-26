@@ -3,30 +3,24 @@ import Header from './Header';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
 import CalenderView from './CalenderView';
 import VenueBarChart from './VenueBarChart';
+import apiurl from "./Api";
 
 function Dashboard() {
-  const [bookings, setBookings] = useState([]);
   const[approved, setapproved] = useState(0);
   const [underprogress, setunderprogress] = useState(0);
   const [pending, setpending] = useState(0);
 
-  
-  const navigate = useNavigate();
-
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await axios.get("https://06d2-103-232-27-107.ngrok-free.app/api/user/bookings");
-        setBookings(response.data);
-        console.log(response.data);
+        const response = await axios.get(`${apiurl}/bookings`);
         response.data.forEach((booking)=>{
-          if(booking.Pending == "All Approved"){
+          if(booking.Pending === "All Approved"){
             setapproved(approved+ 1);
           }
-          else if(booking.pending == "Coordinator, HOD, Principal"){
+          else if(booking.pending === "Coordinator, HOD, Principal"){
             setpending(pending + 1);
           }
           else{

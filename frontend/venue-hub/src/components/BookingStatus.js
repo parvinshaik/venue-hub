@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from './Header';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import apiurl from "./Api";
 
 
 function BookingsList() {
@@ -13,8 +14,10 @@ function BookingsList() {
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const response = await axios.get("https://06d2-103-232-27-107.ngrok-free.app/api/user/bookings");
+                const response = await axios.get(`${apiurl}/bookings`);
+                
                 setBookings(response.data);
+                console.log(response);
             } catch (error) {
                 console.error("Error fetching bookings", error);
             }
@@ -32,7 +35,6 @@ function BookingsList() {
             <Header />
             <ToastContainer />
             <div className="container mx-auto px-4 py-6">
-                {/* Booking Table */}
                 <div className="overflow-x-auto">
                     <table className="min-w-full table-auto bg-white border border-gray-200 rounded-lg shadow-md">
                         <thead>

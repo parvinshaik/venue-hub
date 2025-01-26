@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
+import apiurl from "./Api";
 
 function App() {
     const navigate = useNavigate();
@@ -21,20 +22,19 @@ function App() {
     });
 
     useEffect(() => {
-        let index = 0; // Track the current character index
+        let index = 0; 
         const interval = setInterval(() => {
             if (index < fullText.length) {
-                setText((prev) => prev + fullText.charAt(index)); // Append the next character
-                index++; // Move to the next character
+                setText((prev) => prev + fullText.charAt(index)); 
+                index++; 
             } else {
-                clearInterval(interval); // Clear the interval when finished
+                clearInterval(interval);
             }
-        }, 100); // Typing speed in milliseconds
+        }, 100);
 
-        return () => clearInterval(interval); // Cleanup on component unmount
+        return () => clearInterval(interval);
     }, []);
 
-    // Handle login input change
     const handleLoginChange = (e) => {
         const { name, value } = e.target;
         setLoginData((prev) => ({
@@ -43,7 +43,6 @@ function App() {
         }));
     };
 
-    // Handle register input change
     const handleRegisterChange = (e) => {
         const { name, value, type, checked } = e.target;
         setRegisterData((prev) => ({
@@ -52,17 +51,16 @@ function App() {
         }));
     };
 
-    // Login submit function
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("https://06d2-103-232-27-107.ngrok-free.app/api/user/login", loginData);
+            const response = await axios.post(`${apiurl}/login`, loginData);
             if (response.data) {
                 await localStorage.setItem("loginToken", response.data.token);
                 console.log(response.data);
             }
 
-            if (response.data.token && response.data.approved_user == true) {
+            if (response.data.token && response.data.approved_user === true) {
                 toast.success("Login successful!");
                 navigate("/dashboard");
             }
@@ -74,8 +72,6 @@ function App() {
             toast.error("Login failed. Please check your credentials.");
         }
     };
-
-    // Register submit function
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
         if (!registerData.termsAccepted) {
@@ -90,7 +86,7 @@ function App() {
                 roll: registerData.rollNumber,
                 password: registerData.password
             }
-            const response = await axios.post("https://06d2-103-232-27-107.ngrok-free.app/api/user/register", data);
+            const response = await axios.post(`${apiurl}/register`, data);
 
             console.log(response.data);
             if (response.data) {
@@ -113,7 +109,6 @@ function App() {
                     <h1 className="text-white text-2xl font-bold text-center">{text}</h1>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-lg">
-                    {/* Tabs */}
                     <div className="flex justify-between border-b border-gray-300 mb-6">
                         <button
                             onClick={() => setActiveTab("tab1")}
@@ -129,9 +124,7 @@ function App() {
                         </button>
                     </div>
 
-                    {/* Tab Content */}
                     <div>
-                        {/* Login Tab */}
                         {activeTab === "tab1" && (
                             <form onSubmit={handleLoginSubmit}>
                                 <div>
@@ -167,7 +160,6 @@ function App() {
                             </form>
                         )}
 
-                        {/* Register Tab */}
                         {activeTab === "tab2" && (
                             <form onSubmit={handleRegisterSubmit}>
                                 <div>

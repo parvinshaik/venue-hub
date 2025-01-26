@@ -1,19 +1,3 @@
-// // src/index.js
-// import React from 'react';
-// import ReactDOM from 'react-dom';
-// import './index.css'; // Import the CSS file
-// import App from './components/App';
-// import reportWebVitals from './reportWebVitals';
-
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>,
-//   document.getElementById('root')
-// );
-
-// reportWebVitals();
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './components/App.jsx'
@@ -37,9 +21,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/approvals" element={<ApprovalsPage/>} />
           <Route path="/booking/:bookingId" element={<BookingDetailsPage />} />
           <Route path="*" element={<NotFound />} />
-          {/* <Route path="/" element={<App/>} />
-          <Route path="/" element={<App/>} />
-          <Route path="/" element={<App/>} /> */}
           </Routes>
     </BrowserRouter>
 )

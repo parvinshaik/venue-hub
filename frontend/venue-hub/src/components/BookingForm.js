@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import Header from './Header';
 import { ToastContainer, toast } from 'react-toastify';
+import apiurl from "./Api";
+import { useNavigate } from "react-router-dom";
 
 function BookingForm() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     venue: "",
     branchName: "",
@@ -89,7 +92,7 @@ function BookingForm() {
     formData.token = usertoken ;
 
     try {
-      const response = await fetch("https://06d2-103-232-27-107.ngrok-free.app/api/user/book-venue", {
+      const response = await fetch(`${apiurl}/book-venue`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -97,7 +100,7 @@ function BookingForm() {
       const result = await response.json();
       if(result){
         toast.success("Venue Booking has been successfully Submitted. Kindly wait for the approvals");
-        // navigate("/bookingstatus");
+        navigate("/bookingstatus");
       }
       console.log("API Response:", result);
     } catch (error) {
@@ -115,7 +118,6 @@ function BookingForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Venue Selection */}
         <div className="flex justify-between items-center mt-4">
           <label className="font-semibold w-1/3">Select a Venue:</label>
           <select
@@ -132,7 +134,6 @@ function BookingForm() {
           </select>
         </div>
 
-        {/* Branch & Activity */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block font-semibold mb-1">Name of the Branch:</label>
@@ -158,7 +159,6 @@ function BookingForm() {
           </div>
         </div>
 
-        {/* Date & Timings */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block font-semibold mb-1">Date of Programme/Activity:</label>
@@ -197,7 +197,6 @@ function BookingForm() {
           </div>
         </div>
 
-        {/* Number of Students */}
         <div>
           <label className="block font-semibold mb-1">No. of Students Attending:</label>
           <input
@@ -210,7 +209,6 @@ function BookingForm() {
           />
         </div>
 
-        {/* Coordinator Details */}
         <div>
           <h3 className="font-bold mb-2">Details of Coordinator:</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -263,7 +261,6 @@ function BookingForm() {
           </div>
         </div>
 
-        {/* HOD Details */}
         <div>
           <h3 className="font-bold mb-2">Details of HOD:</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -292,7 +289,6 @@ function BookingForm() {
           </div>
         </div>
 
-        {/* Principal Details */}
         <div>
           <h3 className="font-bold mb-2">Details of Principal:</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -321,7 +317,6 @@ function BookingForm() {
           </div>
         </div>
 
-        {/* Requirements */}
         <div>
           <h3 className="font-bold mb-2">Requirements:</h3>
           <div className="grid grid-cols-2 gap-2">
@@ -346,7 +341,6 @@ function BookingForm() {
           </div>
         </div>
 
-        {/* Submit Button */}
         <div className="flex justify-center">
         <button
             type="submit"
