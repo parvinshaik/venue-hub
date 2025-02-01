@@ -38,18 +38,6 @@ const ApprovalsPage = () => {
       }
   },[]);
 
-  if (loading) {
-    return <p>Loading approved bookings...</p>;
-  }
-
-  if (error) {
-    return <p>There was an error loading the data. Please try again later.</p>;
-  }
-
-  if (bookings.length === 0) {
-    return <p>No approved bookings found.</p>;
-  }
-
   return (
     <div>
       <Header />
