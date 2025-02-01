@@ -5,7 +5,7 @@ const BookingSchema = new mongoose.Schema(
     venue: {
       type: String,
       required: [true, "Venue is required"],
-      enum: ["Playground", "Seminar Hall", "Auditorium"],
+      enum: ["Playground", "Seminar Hall-CSE", "Auditorium","Party Area","Seminar Hall-ECE","Seminar Hall-EEE"],
     },
     branchName: {
       type: String,

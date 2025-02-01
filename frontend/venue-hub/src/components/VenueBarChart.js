@@ -19,7 +19,7 @@ const VenueBarChart = () => {
         const now = moment().local(); 
         const futureTime = moment(now).add(4, "hours"); 
 
-        const venues = ["Playground", "Seminar Hall", "Auditorium"];
+        const venues = ["Playground","Auditorium","Seminar Hall-CSE","Seminar Hall-ECE","Seminar Hall-EEE","Party Area"];
         const availability = venues.map((venue) => {
           const isAvailable = !bookings.some((booking) => {
             if (!booking.timings || !booking.date) {

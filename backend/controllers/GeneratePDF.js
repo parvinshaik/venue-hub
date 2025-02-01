@@ -122,7 +122,7 @@ const generatePDFAndSendEmail = async (booking_Id) => {
 
       
       await transporter.sendMail(mailOptions);
-      console.log("mail sent");
+      console.log("Application form sent to all");
       fs.unlinkSync(pdfPath);
     
 

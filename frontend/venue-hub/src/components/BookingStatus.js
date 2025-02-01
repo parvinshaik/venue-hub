@@ -17,18 +17,17 @@ function BookingsList() {
                 const response = await axios.get(`${apiurl}/bookings`);
                 
                 setBookings(response.data);
-                console.log(response);
             } catch (error) {
                 console.error("Error fetching bookings", error);
             }
         };
         fetchBookings();
-    });
+    },[]);
       useEffect(()=>{
         if(!localStorage.getItem("loginToken")){
           navigate("/");
         }
-      });
+      },[]);
 
 
     const viewBookingDetails = (bookingId) => {

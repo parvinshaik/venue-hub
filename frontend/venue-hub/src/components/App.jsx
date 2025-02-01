@@ -3,6 +3,7 @@ import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import apiurl from "./Api";
+import micHeader from "./images/mic-header.png";
 
 function App() {
     const navigate = useNavigate();
@@ -109,6 +110,7 @@ function App() {
                     <h1 className="text-white text-2xl font-bold text-center">{text}</h1>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-lg">
+                <img src={micHeader} alt="Mic Header" className="w-full h-full my-2" />
                     <div className="flex justify-between border-b border-gray-300 mb-6">
                         <button
                             onClick={() => setActiveTab("tab1")}

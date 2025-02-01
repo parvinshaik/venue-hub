@@ -26,7 +26,7 @@ function BookingDetailsPage() {
       if(!localStorage.getItem("loginToken")){
         navigate("/");
       }
-    });
+    },[]);
 
   if (!bookingDetails) return <div className="flex justify-center items-center h-screen"><div className="loader"></div></div>;
 

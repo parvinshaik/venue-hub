@@ -30,13 +30,13 @@ const ApprovalsPage = () => {
     };
 
     fetchBookings();
-  });
+  },[]);
   const navigate = useNavigate();
     useEffect(()=>{
       if(!localStorage.getItem("loginToken")){
         navigate("/");
       }
-  });
+  },[]);
 
   if (loading) {
     return <p>Loading approved bookings...</p>;

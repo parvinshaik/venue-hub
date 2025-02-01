@@ -14,6 +14,7 @@ import AdbIcon from '@mui/icons-material/Adb';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from "react-router-dom";
+import micHeader from "./images/mic-header.png";
 
 
 const pages = [{
@@ -62,6 +63,10 @@ function ResponsiveAppBar() {
 
   return (
     <>
+    <div className="w-full h-fit flex justify-center items-center mb-2">
+  <img src={micHeader} alt="Mic Header" className="w-[280px] h-[80px]" />
+</div>
+    
     <AppBar position="static"  sx={{
         background: 'linear-gradient(to right, #6a11cb, #2575fc)', // Tailwind Gradient Applied Here
       }}>
