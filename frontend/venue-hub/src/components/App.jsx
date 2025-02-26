@@ -112,7 +112,7 @@ function App() {
     };
 
     return (
-        <div className=" w-full h-screen bg-gradient-to-r from-[#6a11cb] to-[#2575fc] ">
+        <div className=" w-full h-full pb-40 bg-gradient-to-r from-[#6a11cb] to-[#2575fc]">
             <ToastContainer />
             <div className="">
                 <BeatLoader
@@ -125,7 +125,7 @@ function App() {
                 />
 
             </div>
-            <div className="max-h-screen flex flex-col items-center justify-center ">
+            <div className="flex flex-col items-center justify-center ">
 
                 <div className="flex flex-col w-[50%] mr-10 t-0 my-20">
                     <h3 className="text-white text-4xl font-bold text-center mb-4">Venue Hub</h3>
@@ -158,7 +158,7 @@ function App() {
                                         value={loginData.email}
                                         onChange={handleLoginChange}
                                         placeholder="Email address"
-                                        className="w-full mb-4 p-3 border rounded focus:ring-2 focus:ring-blue-500"
+                                        className="w-full mb-4 p-1 border rounded focus:ring-2 focus:ring-blue-500"
                                     />
                                     <input required
                                         type="password"
@@ -166,7 +166,7 @@ function App() {
                                         value={loginData.password}
                                         onChange={handleLoginChange}
                                         placeholder="Password"
-                                        className="w-full mb-4 p-3 border rounded focus:ring-2 focus:ring-blue-500"
+                                        className="w-full mb-4 p-1 border rounded focus:ring-2 focus:ring-blue-500"
                                     />
                                     <div className="flex justify-between items-center mb-4">
                                         <label className="flex items-center">
@@ -194,7 +194,7 @@ function App() {
                                         value={registerData.name}
                                         onChange={handleRegisterChange}
                                         placeholder="Name"
-                                        className="w-full mb-4 p-3 border rounded focus:ring-2 focus:ring-blue-500"
+                                        className="w-full mb-4 p-1 border rounded focus:ring-2 focus:ring-blue-500"
                                     />
                                     <input required
                                         type="text"
@@ -202,7 +202,7 @@ function App() {
                                         value={registerData.rollNumber}
                                         onChange={handleRegisterChange}
                                         placeholder="Roll Number"
-                                        className="w-full mb-4 p-3 border rounded focus:ring-2 focus:ring-blue-500"
+                                        className="w-full mb-4 p-1 border rounded focus:ring-2 focus:ring-blue-500"
                                     />
                                     <input required
                                         type="email"
@@ -210,7 +210,7 @@ function App() {
                                         value={registerData.email}
                                         onChange={handleRegisterChange}
                                         placeholder="Email"
-                                        className="w-full mb-4 p-3 border rounded focus:ring-2 focus:ring-blue-500"
+                                        className="w-full mb-4 p-1 border rounded focus:ring-2 focus:ring-blue-500"
                                     />
                                     <input required
                                         type="password"
@@ -218,7 +218,7 @@ function App() {
                                         value={registerData.password}
                                         onChange={handleRegisterChange}
                                         placeholder="Password"
-                                        className="w-full mb-4 p-3 border rounded focus:ring-2 focus:ring-blue-500"
+                                        className="w-full mb-4 p-1 border rounded focus:ring-2 focus:ring-blue-500"
                                     />
                                     <div className="flex items-center mb-4">
                                         <input required
