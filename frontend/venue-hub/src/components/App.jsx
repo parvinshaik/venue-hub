@@ -173,9 +173,9 @@ function App() {
                                             <input required type="checkbox" className="mr-2" />
                                             Remember me
                                         </label>
-                                        <a href="#!" className="text-sm text-blue-500">
+                                        {/* <a href="#!" className="text-sm text-blue-500">
                                             Forgot password?
-                                        </a>
+                                        </a> */}
                                     </div>
                                     <button type="submit" className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600">
                                         Sign in
