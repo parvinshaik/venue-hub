@@ -13,10 +13,12 @@ function Dashboard() {
   const [pendingCoordinator, setPendingCoordinator] = useState(0);
   const [pendingHOD, setPendingHOD] = useState(0);
   const [pendingPrincipal, setPendingPrincipal] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`${apiurl}/bookings`);
         console.log("Gauge chart data", response.data);
 
@@ -44,6 +46,9 @@ function Dashboard() {
       } catch (error) {
         console.error("Error fetching bookings", error);
       }
+      finally{
+        setLoading(false);
+      }
     };
     fetchBookings();
   }, []);
@@ -57,7 +62,7 @@ function Dashboard() {
   return (
     <div>
 
-      <Header />
+      <Header loading={loading} />
       <div className='flex flex-row h-fit'>
       <div className='flex flex-col mt-14 ml-10 mr-40 '>
       <div className='mb-10'>

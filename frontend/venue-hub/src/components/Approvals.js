@@ -6,12 +6,13 @@ import { useNavigate } from "react-router-dom";
 
 const ApprovalsPage = () => {
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const fetchBookings = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(`${apiurl}/bookings`);
         const allBookings = response.data;
@@ -21,10 +22,11 @@ const ApprovalsPage = () => {
         console.log("Approved Bookings:", approvedBookings); 
 
         setBookings(approvedBookings);
-        setLoading(false);
       } catch (err) {
         console.error("Error fetching bookings:", err);
         setError(true);
+      }
+      finally{
         setLoading(false);
       }
     };
@@ -40,7 +42,7 @@ const ApprovalsPage = () => {
 
   return (
     <div>
-      <Header />
+      <Header loading={loading} />
 
       <div className="container mx-auto p-4">
         <h1 className="text-xl font-bold mb-4">Approved Bookings</h1>

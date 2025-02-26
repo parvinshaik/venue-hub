@@ -7,6 +7,7 @@ import axios from "axios";
 
 function BookingForm() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     venue: "",
     branchName: "",
@@ -97,7 +98,7 @@ function BookingForm() {
 
   const checkVenue = async (e) => {
     e.preventDefault();
-  
+  setLoading(true);
     if (formData.date === "" || formData.timings.start === "" || formData.timings.end === "") {
       alert("Please enter a valid date and time");
       return;
@@ -137,6 +138,9 @@ function BookingForm() {
     } catch (error) {
       console.error("Error fetching bookings", error);
     }
+    finally{
+      setLoading(false);
+    }
   };
   
   
@@ -150,7 +154,7 @@ function BookingForm() {
     console.log("Submitted Data:", formData);
     const usertoken = await localStorage.getItem("loginToken");
     formData.token = usertoken;
-
+    setLoading(true);
     try {
       const response = await fetch(`${apiurl}/book-venue`, {
         method: "POST",
@@ -169,13 +173,16 @@ function BookingForm() {
     } catch (error) {
       console.error("Error submitting the form:", error);
     }
+    finally{
+      setLoading(false);
+    }
   };
 
 
 
   return (
     <div className="">
-      <Header />
+      <Header loading={loading} />
       <ToastContainer />
       <div className="p-6 bg-white rounded-sm mt-4 border-1 border-gray-400 overflow-y-hidden">
         <div className=" w-full bg-[#2575fc] text-white font-bold text-lg py-2 px-4 rounded-t-lg">

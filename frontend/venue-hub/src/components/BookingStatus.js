@@ -10,15 +10,20 @@ import apiurl from "./Api";
 function BookingsList() {
     const [bookings, setBookings] = useState([]);
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const fetchBookings = async () => {
             try {
+                setLoading(true);
                 const response = await axios.get(`${apiurl}/bookings`);
                 
                 setBookings(response.data);
             } catch (error) {
                 console.error("Error fetching bookings", error);
+            }
+            finally{
+                setLoading(false);
             }
         };
         fetchBookings();
@@ -36,7 +41,7 @@ function BookingsList() {
 
     return (
         <div>
-            <Header />
+            <Header  loading={loading}/>
             <ToastContainer />
             <div className="container mx-auto px-4 py-6">
                 <div className="overflow-x-auto">

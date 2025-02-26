@@ -14,7 +14,7 @@ const Booking = require("../models/Booking");
 const signup = async (req, res) => {
   try {
     const { name, email, roll, password } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
 
     if (!name || !email || !roll || !password) {
@@ -44,8 +44,8 @@ const signup = async (req, res) => {
       name,
       email,
       roll,
-      password, 
-      approved_user: false, 
+      password,
+      approved_user: false,
     };
 
     const newUser = await User.create(userDetails);
@@ -74,7 +74,10 @@ const signup = async (req, res) => {
       to: adminEmail,
       subject: `Approve or Deny User Request`,
       html: `
-        <p>A user has been registered and waiting for approval. Below are the details:</p>
+      <p style="color: red;">Note: User is signed up using Manual Registration</p>
+
+       <p>Dear Admin Team,</p>
+        <p>A new user has been registered and waiting for approval. Below are the details:</p>
         <ul>
           <li><strong>User ID:</strong> ${user._id}</li>
           <li><strong>Name:</strong> ${user.name}</li>
@@ -91,9 +94,12 @@ const signup = async (req, res) => {
         <a href="${denyLink}" target="_blank" style="color: red;">Deny User</a>
         <p>Note: This link will expire in 7 days.</p>
 
-         <p>Thank you,</p>
+          <p>Thanks and regards,</p>
+      <p><strong>Admin Team @Venue Hub</strong></p>
+      <p>DVR & Dr. HS MIC College of Technology</p>
+      <p>Email: <a href="mailto:venuebooking.adm.mictech@gmail.com">venuebooking.adm.mictech@gmail.com</a></p>
      
-      `,
+      `
     };
 
     await transporter.sendMail(mailOptions);
@@ -175,7 +181,7 @@ const signin = async (req, res) => {
     const isUser = await User.findOne({ email: email, password: password });
     if (isUser) {
       const isPasswordValid = true;
-
+      console.log(isUser);
       if (isPasswordValid) {
         const accessToken = await jwt.sign(
           { userId: isUser._id },
@@ -184,10 +190,12 @@ const signin = async (req, res) => {
             expiresIn: "7d",
           }
         );
+        console.log(isUser);
         return res.status(200).json({
           message: "Login successful",
           name: isUser.name,
           token: accessToken,
+          userid: isUser._id,
           approved_user: isUser.approved_user
         });
       } else {
@@ -197,7 +205,7 @@ const signin = async (req, res) => {
       return res.status(404).json({ message: "User Not Found" });
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -341,6 +349,62 @@ const getBookingDetails = async (req, res) => {
 };
 
 
+const getuser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user details", error });
+  }
+};
+
+// Update user details
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email, roll, password, approved_user } = req.body;
+
+    const isUser = await User.findOne({ email: email, password: password });
+    if (!isUser) {
+      return res.status(404).json({ message: "Email or current password is wrong" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { name, email, roll, password, approved_user },
+      { new: true }
+    );
+    // console.log(updatedUser);
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "User updated successfully", user: updatedUser });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error updating user", error });
+  }
+};
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user || user.password !== currentPassword) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating password", error });
+  }
+};
 
 
 module.exports = {
@@ -349,6 +413,9 @@ module.exports = {
   bookVenue,
   getAllBookings,
   getBookingDetails,
-  AdminAction
+  AdminAction,
+  updateProfile,
+  getuser,
+  changePassword
 
 };

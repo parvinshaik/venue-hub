@@ -15,7 +15,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from "react-router-dom";
 import micHeader from "./images/mic-header.png";
-
+import BeatLoader from "react-spinners/BeatLoader";
 
 const pages = [{
    name: 'Dashboard',
@@ -37,7 +37,7 @@ const pages = [{
 
 const settings = ['Profile', 'Change Password', 'Logout'];
 
-function ResponsiveAppBar() {
+function ResponsiveAppBar({loading}) {
     const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -51,14 +51,23 @@ function ResponsiveAppBar() {
   };
 
   const handleCloseNavMenu = (page) => {
-    navigate(page.path)
+    setAnchorElNav(null);  // Close the navigation menu
+    if (page) navigate(page.path);
   };
-
-  const handleCloseUserMenu = async(setting) => {
-    if(setting === "Logout"){
+  
+  const handleCloseUserMenu = async (setting) => {
+    setAnchorElUser(null); // Close the user menu
+    if (setting === "Logout") {
       await localStorage.removeItem("loginToken");
       navigate("/");
     }
+    else if (setting === "Change Password") {
+      navigate("/changepassword");
+    }
+    else if (setting === "Profile"){
+      navigate("/profile")
+    }
+
   };
 
   return (
@@ -66,7 +75,14 @@ function ResponsiveAppBar() {
     <div className="w-full h-fit flex justify-center items-center mb-2">
   <img src={micHeader} alt="Mic Header" className="w-[280px] h-[80px]" />
 </div>
-    
+<BeatLoader
+                    color="purple"
+                    loading={loading}
+                    size={30}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                    className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                />
     <AppBar position="static"  sx={{
         background: 'linear-gradient(to right, #6a11cb, #2575fc)', // Tailwind Gradient Applied Here
       }}>
@@ -126,7 +142,7 @@ function ResponsiveAppBar() {
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+          <LocationOnIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
