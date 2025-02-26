@@ -235,7 +235,9 @@ function App() {
                                     <button type="submit" className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600">
                                         Sign up
                                     </button>
-                                    
+                                    <div className="w-full border-2 border-blue-500 rounded-lg mt-4">
+                                    <GoogleAuthButton />
+                                    </div>
                                     
                                 </div>
                                 

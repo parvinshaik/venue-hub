@@ -17,9 +17,9 @@ function GoogleAuthButton() {
             const res = await axios.post(`${apiurl}/auth/google`, {
                 token: credentialResponse.credential, 
             });
-            console.log("res",res);
+            console.log("res", res);
 
-            if (res.status == 200) {
+            if (res.status === 200) {
                 localStorage.setItem("loginToken", res.data.token);
                 localStorage.setItem("userid", res.data.userid);
                 navigate("/dashboard");
@@ -39,7 +39,9 @@ function GoogleAuthButton() {
             <GoogleLogin
                 onSuccess={handleSuccess}
                 onError={handleFailure}
-                useOneTap
+                ux_mode="popup"
+                prompt="select_account"
+                useOneTap={false} 
             />
         </GoogleOAuthProvider>
     );
