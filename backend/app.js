@@ -12,10 +12,21 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const mongoURI = process.env.MONGODB_URL;
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 30000, // 30 seconds (default is 10 seconds)
+  socketTimeoutMS: 45000, // 45 seconds (default is 30 seconds)
+  bufferCommands: false, // Optional: Disable buffering
+});
+
 mongoose
   .connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 450000, // 30 seconds (default is 10 seconds)
+    socketTimeoutMS: 45000,
+    bufferCommands: false,
   })
   .then(() => {
     console.log("Connected to MongoDB Atlas!");
