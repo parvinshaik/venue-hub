@@ -29,7 +29,7 @@ const approveBooking = async (req, res) => {
     if (nextStage) {
       await booking.save();
       
-      await sendApprovalEmail(bookingId, nextStage);
+      sendApprovalEmail(bookingId, nextStage);
       return res.status(200).json({ message: `Booking approved by ${stage}. Email sent to ${nextStage}.` });
     } else {
 
