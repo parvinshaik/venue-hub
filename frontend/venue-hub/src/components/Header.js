@@ -142,7 +142,7 @@ function ResponsiveAppBar({loading}) {
               ))}
             </Menu>
           </Box>
-          <LocationOnIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+          
           <Typography
             variant="h5"
             noWrap
