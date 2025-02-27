@@ -28,9 +28,9 @@ async function connectToDB(){
     console.error("Error connecting to MongoDB Atlas:", error);
   });
 }
-connectToDB();
 const userRouter = require("./routes/userRoute");
 app.use("/api/user", userRouter);
 app.listen(8000, () => {
+  connectToDB();
   console.log("Server started on port 8000");
 });
