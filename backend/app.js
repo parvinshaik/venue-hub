@@ -20,7 +20,7 @@ async function connectToDB(){
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 25000,
     socketTimeoutMS: 25000,
-    connectTimeoutMS: 16000
+    connectTimeoutMS: 20000
   })
   .then(() => {
     console.log("Connected to MongoDB Atlas!");

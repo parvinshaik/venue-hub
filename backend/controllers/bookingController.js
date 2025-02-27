@@ -36,7 +36,7 @@ const approveBooking = async (req, res) => {
       booking.isApproved = true;
       await booking.save();
 
-      await generatePDFAndSendEmail(bookingId);
+      generatePDFAndSendEmail(bookingId);
       return res.status(200).json({ message: "Booking fully approved!. Application form generation in progress. Kindly wait for few minutes to recieve in mail." });
     }
   } catch (err) {
