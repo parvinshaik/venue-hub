@@ -18,8 +18,8 @@ async function connectToDB(){
   .connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 450000,
-    socketTimeoutMS: 45000,
+    serverSelectionTimeoutMS: 25000,
+    socketTimeoutMS: 25000,
   })
   .then(() => {
     console.log("Connected to MongoDB Atlas!");
