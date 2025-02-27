@@ -29,14 +29,14 @@ const approveBooking = async (req, res) => {
     if (nextStage) {
       await booking.save();
       
-      sendApprovalEmail(bookingId, nextStage);
+      await sendApprovalEmail(bookingId, nextStage);
       return res.status(200).json({ message: `Booking approved by ${stage}. Email sent to ${nextStage}.` });
     } else {
 
       booking.isApproved = true;
       await booking.save();
 
-      generatePDFAndSendEmail(bookingId);
+      await generatePDFAndSendEmail(bookingId);
       return res.status(200).json({ message: "Booking fully approved!. Application form generation in progress. Kindly wait for few minutes to recieve in mail." });
     }
   } catch (err) {
