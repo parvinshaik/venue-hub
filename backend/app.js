@@ -12,13 +12,14 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const mongoURI = process.env.MONGODB_URL;
-mongoose
+
+async function connectToDB(){
+  await mongoose
   .connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 450000,
     socketTimeoutMS: 45000,
-    bufferCommands: false,
   })
   .then(() => {
     console.log("Connected to MongoDB Atlas!");
@@ -26,7 +27,8 @@ mongoose
   .catch((error) => {
     console.error("Error connecting to MongoDB Atlas:", error);
   });
-
+}
+connectToDB();
 const userRouter = require("./routes/userRoute");
 app.use("/api/user", userRouter);
 app.listen(8000, () => {
