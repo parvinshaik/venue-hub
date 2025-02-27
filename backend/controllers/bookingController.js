@@ -20,24 +20,24 @@ const approveBooking = async (req, res) => {
     const booking = await Booking.findById(bookingId);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
+    
     booking.approvalStatus[stage] = true;
 
+    
     const nextStage = getNextStage(stage);
 
     if (nextStage) {
       await booking.save();
+      
       await sendApprovalEmail(bookingId, nextStage);
       return res.status(200).json({ message: `Booking approved by ${stage}. Email sent to ${nextStage}.` });
     } else {
+
       booking.isApproved = true;
       await booking.save();
 
-      // Run generatePDFAndSendEmail in the background
-      setTimeout(() => generatePDFAndSendEmail(bookingId), 0);
-
-      return res.status(200).json({
-        message: "Booking fully approved! The application form generation is in progress. You will receive it via email shortly.",
-      });
+      generatePDFAndSendEmail(bookingId);
+      return res.status(200).json({ message: "Booking fully approved!. Application form generation in progress. Kindly wait for few minutes to recieve in mail." });
     }
   } catch (err) {
     console.error(err);
